@@ -144,7 +144,7 @@ if(isset($_POST["Submit"])){
               <span class="FieldInfo">Existing Category: </span>
               <?php echo $CategoryToBeUpdated;?>
               <br>
-              <label for="CategoryTitle"> <span class="FieldInfo"> Chose Categroy </span></label>
+              <label for="CategoryTitle"> <span class="FieldInfo"> Chose Category </span></label>
                <select class="form-control" id="CategoryTitle"  name="Category">
                  <?php
                  //Fetchinng all the categories from category table

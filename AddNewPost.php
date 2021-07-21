@@ -129,7 +129,7 @@ if(isset($_POST["Submit"])){
                <input class="form-control" type="text" name="PostTitle" id="title" placeholder="Type title here" value="">
             </div>
             <div class="form-group">
-              <label for="CategoryTitle"> <span class="FieldInfo"> Chose Categroy </span></label>
+              <label for="CategoryTitle"> <span class="FieldInfo"> Choose Category </span></label>
                <select class="form-control" id="CategoryTitle"  name="Category">
                  <?php
                  //Fetchinng all the categories from category table
