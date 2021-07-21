@@ -11,7 +11,4 @@ $query_builder = TRUE;
 // Connect to DB
 // $DSN="mysql:host='.$cleardb_server';dbname='.$cleardb_db.';";
 $ConnectingDB = new PDO("mysql:host=$cleardb_server; dbname=$cleardb_db;",$cleardb_username,$cleardb_password);
-
-$DSN='mysql:host = localhost; dbname=cms4.2.1';
-$ConnectingDB = new PDO($DSN,'root','');
 ?>
