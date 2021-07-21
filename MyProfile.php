@@ -69,7 +69,7 @@ if (strlen($AHeadline)>30) {
   <!-- NAVBAR -->
   <div style="height:10px; background:#27aae1;"></div>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">  <?phpecho("Image {$Image} / {$Target}");?>
+    <div class="container">
       <a href="#" class="navbar-brand"> ANDYMCC.COM</a>
       <button class="navbar-toggler" data-toggle="collapse" data-target="#navbarcollapseCMS">
         <span class="navbar-toggler-icon"></span>
