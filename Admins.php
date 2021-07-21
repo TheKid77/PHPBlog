@@ -34,7 +34,7 @@ if(isset($_POST["Submit"])){
     $stmt = $ConnectingDB->prepare($sql);
     $stmt->bindValue(':dateTime',$DateTime);
     $stmt->bindValue(':userName',$UserName);
-    $stmt->bindValue(':password',$Password);
+    $stmt->bindValue(':password',md5($Password));
     $stmt->bindValue(':aName',$Name);
     $stmt->bindValue(':adminName',$Admin);
     $Execute=$stmt->execute();
@@ -89,7 +89,7 @@ if(isset($_POST["Submit"])){
           <a href="Comments.php" class="nav-link">Comments</a>
         </li>
         <li class="nav-item">
-          <a href="Blog.php?page=1" class="nav-link" target="_blank">Live Blog</a>
+          <a href="index.php?page=1" class="nav-link" target="_blank">Live Blog</a>
         </li>
       </ul>
       <ul class="navbar-nav ml-auto">

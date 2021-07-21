@@ -34,13 +34,13 @@
       <div class="collapse navbar-collapse" id="navbarcollapseCMS">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item">
-          <a href="Blog.php?page=1" class="nav-link">Home</a>
+          <a href="index.php?page=1" class="nav-link">Home</a>
         </li>
         <li class="nav-item">
           <a href="#" class="nav-link">About Us</a>
         </li>
         <li class="nav-item">
-          <a href="Blog.php?page=1" class="nav-link">Blog</a>
+          <a href="index.php?page=1" class="nav-link">Blog</a>
         </li>
         <li class="nav-item">
           <a href="#" class="nav-link">Contact Us</a>
@@ -50,7 +50,7 @@
         </li>
       </ul>
       <ul class="navbar-nav ml-auto">
-        <form class="form-inline d-none d-sm-block" action="Blog.php">
+        <form class="form-inline d-none d-sm-block" action="index.php">
           <div class="form-group">
           <input class="form-control mr-2" type="text" name="Search" placeholder="Search here"value="">
           <button  class="btn btn-primary" name="SearchButton">Go</button>
@@ -87,7 +87,7 @@
             $stmt = $ConnectingDB->prepare($sql);
             $stmt->bindValue(':search','%'.$Search.'%');
             $stmt->execute();
-          }// Query When Pagination is Active i.e Blog.php?page=1
+          }// Query When Pagination is Active i.e index.php?page=1
           elseif (isset($_GET["page"])) {
             $Page = $_GET["page"];
             if($Page==0||$Page<1){
@@ -123,7 +123,7 @@
             <img src="Uploads/<?php echo htmlentities($Image); ?>" style="max-height:450px;" class="img-fluid card-img-top" />
             <div class="card-body">
               <h4 class="card-title"><?php echo htmlentities($PostTitle); ?></h4>
-              <small class="text-muted">Category: <span class="text-dark"> <a href="Blog.php?category=<?php echo htmlentities($Category); ?>"> <?php echo htmlentities($Category); ?> </a></span> & Written by <span class="text-dark"> <a href="Profile.php?username=<?php echo htmlentities($Admin); ?>"> <?php echo htmlentities($Admin); ?></a></span> On <span class="text-dark"><?php echo htmlentities($DateTime); ?></span></small>
+              <small class="text-muted">Category: <span class="text-dark"> <a href="index.php?category=<?php echo htmlentities($Category); ?>"> <?php echo htmlentities($Category); ?> </a></span> & Written by <span class="text-dark"> <a href="Profile.php?username=<?php echo htmlentities($Admin); ?>"> <?php echo htmlentities($Admin); ?></a></span> On <span class="text-dark"><?php echo htmlentities($DateTime); ?></span></small>
               <span style="float:right;" class="badge badge-dark text-light">Comments:
                  <?php echo ApproveCommentsAccordingtoPost($PostId);?>
               </span>
@@ -144,7 +144,7 @@
               <?php if( isset($Page) ) {
                 if ( $Page>1 ) {?>
              <li class="page-item">
-                 <a href="Blog.php?page=<?php  echo $Page-1; ?>" class="page-link">&laquo;</a>
+                 <a href="index.php?page=<?php  echo $Page-1; ?>" class="page-link">&laquo;</a>
                </li>
              <?php } }?>
             <?php
@@ -161,12 +161,12 @@
               if( isset($Page) ){
                 if ($i == $Page) {  ?>
               <li class="page-item active">
-                <a href="Blog.php?page=<?php  echo $i; ?>" class="page-link"><?php  echo $i; ?></a>
+                <a href="index.php?page=<?php  echo $i; ?>" class="page-link"><?php  echo $i; ?></a>
               </li>
               <?php
             }else {
               ?>  <li class="page-item">
-                  <a href="Blog.php?page=<?php  echo $i; ?>" class="page-link"><?php  echo $i; ?></a>
+                  <a href="index.php?page=<?php  echo $i; ?>" class="page-link"><?php  echo $i; ?></a>
                 </li>
             <?php  }
           } } ?>
@@ -174,7 +174,7 @@
           <?php if ( isset($Page) && !empty($Page) ) {
             if ($Page+1 <= $PostPagination) {?>
          <li class="page-item">
-             <a href="Blog.php?page=<?php  echo $Page+1; ?>" class="page-link">&raquo;</a>
+             <a href="index.php?page=<?php  echo $Page+1; ?>" class="page-link">&raquo;</a>
            </li>
          <?php } }?>
             </ul>
@@ -188,7 +188,9 @@
             <div class="card-body">
               <img src="images/startblog.png" class="d-block img-fluid mb-3" alt="">
               <div class="text-center">
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                <button type="button" class="btn btn-danger btn-block text-center text-white mb-4" name="button">
+                  CLICK THE LOGIN BUTTON BELOW TO "HAVE A PLAY"   
+                </button> 
               </div>
             </div>
           </div>
@@ -199,8 +201,10 @@
             </div>
             <div class="card-body">
               <button type="button" class="btn btn-success btn-block text-center text-white mb-4" name="button">Join the Forum</button>
-              <button type="button" class="btn btn-danger btn-block text-center text-white mb-4" name="button">Login</button>
-              <div class="input-group mb-3">
+              <form class="" action="Login.php" method="get" enctype="multipart/form-data">
+                <button type="submit" class="btn btn-danger btn-block text-center text-white mb-4" name="button">Login</button>
+              </form>
+                <div class="input-group mb-3">
                 <input type="text" class="form-control" name="" placeholder="Enter your email"value="">
                 <div class="input-group-append">
                   <button type="button" class="btn btn-primary btn-sm text-center text-white" name="button">Subscribe Now</button>
@@ -222,7 +226,7 @@
                   $CategoryId = $DataRows["id"];
                   $CategoryName=$DataRows["title"];
                  ?>
-                <a href="Blog.php?category=<?php echo $CategoryName; ?>"> <span class="heading"> <?php echo $CategoryName; ?></span> </a><br>
+                <a href="index.php?category=<?php echo $CategoryName; ?>"> <span class="heading"> <?php echo $CategoryName; ?></span> </a><br>
                <?php } ?>
             </div>
           </div>
