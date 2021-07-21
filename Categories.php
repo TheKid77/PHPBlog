@@ -83,7 +83,7 @@ if(isset($_POST["Submit"])){
           <a href="Comments.php" class="nav-link">Comments</a>
         </li>
         <li class="nav-item">
-          <a href="Blog.php?page=1" class="nav-link" target="_blank">Live Blog</a>
+          <a href="index.php?page=1" class="nav-link" target="_blank">Live Blog</a>
         </li>
       </ul>
       <ul class="navbar-nav ml-auto">
