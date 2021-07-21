@@ -91,7 +91,7 @@ if (isset($_POST["Submit"])) {
                     <div class="input-group-prepend">
                       <span class="input-group-text text-white bg-info"> <i class="fas fa-user"></i> </span>
                     </div>
-                    <input type="text" class="form-control" name="Username" id="username" value="">
+                    <input type="text" class="form-control" name="Username" id="username" value="andymcc77">
                   </div>
                 </div>
                 <div class="form-group">
@@ -100,14 +100,12 @@ if (isset($_POST["Submit"])) {
                     <div class="input-group-prepend">
                       <span class="input-group-text text-white bg-info"> <i class="fas fa-lock"></i> </span>
                     </div>
-                    <input type="password" class="form-control" name="Password" id="password" value="">
+                    <input type="password" class="form-control" name="Password" id="password" value="password">
                   </div>
                 </div>
                 <input type="submit" name="Submit" class="btn btn-info btn-block" value="Login">
               </form>
-
             </div>
-
           </div>
 
         </div>
@@ -119,7 +117,7 @@ if (isset($_POST["Submit"])) {
     <?php include('Includes/Footer.php');?>
 
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integranity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
 <script>
   $('#year').text(new Date().getFullYear());

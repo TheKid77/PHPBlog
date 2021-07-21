@@ -22,7 +22,7 @@ function Login_Attempt($UserName,$Password){
   $sql = "SELECT * FROM admins WHERE username=:userName AND password=:passWord LIMIT 1";
   $stmt = $ConnectingDB->prepare($sql);
   $stmt->bindValue(':userName',$UserName);
-  $stmt->bindValue(':passWord',$Password);
+  $stmt->bindValue(':passWord',md5($Password));
   $stmt->execute();
   $Result = $stmt->rowcount();
   if ($Result==1) {
