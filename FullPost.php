@@ -74,13 +74,13 @@ if(isset($_POST["Submit"])){
       <div class="collapse navbar-collapse" id="navbarcollapseCMS">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item">
-          <a href="Blog.php?page=1" class="nav-link">Home</a>
+          <a href="index.php?page=1" class="nav-link">Home</a>
         </li>
         <li class="nav-item">
           <a href="#" class="nav-link">About Us</a>
         </li>
         <li class="nav-item">
-          <a href="Blog.php?page=1" class="nav-link">Blog</a>
+          <a href="index.php?page=1" class="nav-link">Blog</a>
         </li>
         <li class="nav-item">
           <a href="#" class="nav-link">Contact Us</a>
@@ -90,7 +90,7 @@ if(isset($_POST["Submit"])){
         </li>
       </ul>
       <ul class="navbar-nav ml-auto">
-        <form class="form-inline d-none d-sm-block" action="Blog.php">
+        <form class="form-inline d-none d-sm-block" action="index.php">
           <div class="form-group">
           <input class="form-control mr-2" type="text" name="Search" placeholder="Search here"value="">
           <button  class="btn btn-primary" name="SearchButton">Go</button>
@@ -132,14 +132,14 @@ if(isset($_POST["Submit"])){
             $PostIdFromURL = $_GET["id"];
             if (!isset($PostIdFromURL)) {
               $_SESSION["ErrorMessage"]="Bad Request !";
-              Redirect_to("Blog.php?page=1");
+              Redirect_to("index.php?page=1");
             }
             $sql  = "SELECT * FROM posts  WHERE id= '$PostIdFromURL'";
             $stmt =$ConnectingDB->query($sql);
             $Result=$stmt->rowcount();
             if ($Result!=1) {
               $_SESSION["ErrorMessage"]="Bad Request !";
-              Redirect_to("Blog.php?page=1");
+              Redirect_to("index.php?page=1");
             }
 
           }
@@ -156,7 +156,7 @@ if(isset($_POST["Submit"])){
             <img src="Uploads/<?php echo htmlentities($Image); ?>" style="max-height:450px;" class="img-fluid card-img-top" />
             <div class="card-body">
               <h4 class="card-title"><?php echo htmlentities($PostTitle); ?></h4>
-              <small class="text-muted">Category: <span class="text-dark"> <a href="Blog.php?category=<?php echo htmlentities($Category); ?>"> <?php echo htmlentities($Category); ?> </a></span> & Written by <span class="text-dark"> <a href="Profile.php?username=<?php echo htmlentities($Admin); ?>"> <?php echo htmlentities($Admin); ?></a></span> On <span class="text-dark"><?php echo htmlentities($DateTime); ?></span></small>
+              <small class="text-muted">Category: <span class="text-dark"> <a href="index.php?category=<?php echo htmlentities($Category); ?>"> <?php echo htmlentities($Category); ?> </a></span> & Written by <span class="text-dark"> <a href="Profile.php?username=<?php echo htmlentities($Admin); ?>"> <?php echo htmlentities($Admin); ?></a></span> On <span class="text-dark"><?php echo htmlentities($DateTime); ?></span></small>
             <hr>
               <p class="card-text">
                 <?php echo nl2br($PostDescription); ?></p>
@@ -270,7 +270,7 @@ if(isset($_POST["Submit"])){
                   $CategoryId = $DataRows["id"];
                   $CategoryName=$DataRows["title"];
                  ?>
-                <a href="Blog.php?category=<?php echo $CategoryName; ?>"> <span class="heading"> <?php echo $CategoryName; ?></span> </a><br>
+                <a href="index.php?category=<?php echo $CategoryName; ?>"> <span class="heading"> <?php echo $CategoryName; ?></span> </a><br>
                <?php } ?>
             </div>
           </div>

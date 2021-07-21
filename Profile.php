@@ -19,7 +19,7 @@ if( $Result==1 ){
   }
 }else {
   $_SESSION["ErrorMessage"]="Bad Request !!";
-  Redirect_to("Blog.php?page=1");
+  Redirect_to("index.php?page=1");
 }
 
 
@@ -47,13 +47,13 @@ if( $Result==1 ){
       <div class="collapse navbar-collapse" id="navbarcollapseCMS">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item">
-          <a href="Blog.php" class="nav-link">Home</a>
+          <a href="index.php" class="nav-link">Home</a>
         </li>
         <li class="nav-item">
           <a href="#" class="nav-link">About Us</a>
         </li>
         <li class="nav-item">
-          <a href="Blog.php" class="nav-link">Blog</a>
+          <a href="index.php" class="nav-link">Blog</a>
         </li>
         <li class="nav-item">
           <a href="#" class="nav-link">Contact Us</a>
@@ -63,7 +63,7 @@ if( $Result==1 ){
         </li>
       </ul>
       <ul class="navbar-nav ml-auto">
-        <form class="form-inline d-none d-sm-block" action="Blog.php">
+        <form class="form-inline d-none d-sm-block" action="index.php">
           <div class="form-group">
           <input class="form-control mr-2" type="text" name="Search" placeholder="Search here"value="">
           <button  class="btn btn-primary" name="SearchButton">Go</button>
