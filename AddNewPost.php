@@ -74,8 +74,6 @@ if(isset($_POST["Submit"])){
 
     if($Execute){
       $_SESSION["SuccessMessage"]="Post with id : " .$ConnectingDB->lastInsertId()." added Successfully";
-      $_SESSION["SuccessMessage"]="Good x is ".$count;
-
       Redirect_to("AddNewPost.php");
     }else {
       if($count >2) {
