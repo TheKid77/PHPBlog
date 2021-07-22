@@ -1,6 +1,10 @@
 <?php require_once("Includes/DB.php"); ?>
 <?php require_once("Includes/Functions.php"); ?>
 <?php require_once("Includes/Sessions.php"); ?>
+<?php
+$access_key = getenv('AWS_ACCESS_KEY_ID')?: die('No "AWS_ACCESS_KEY_ID" config var in found in env!');
+$secret_key = getenv('AWS_SECRET_ACCESS_KEY')?: die('No "AWS_SECRET_ACCESS_KEY" config var in found in env!');
+$bucket = getenv('S3_BUCKET')?: die('No "S3_BUCKET" config var in found in env!');?>
 <?php Confirm_Login(); ?>
 <?php
 $SarchQueryParameter = $_GET['id'];
@@ -22,9 +26,30 @@ if(isset($_POST["Submit"])){
     $sql = "DELETE FROM posts WHERE id='$SarchQueryParameter'";
     $Execute =$ConnectingDB->query($sql);
     //var_dump($Execute);
-    if($Execute){
+    if($Execute){  
       $Target_Path_To_DELETE_Image = "Uploads/$ImageToBeDeleted";
-      unlink($Target_Path_To_DELETE_Image);
+
+      // unlink($Target_Path_To_DELETE_Image);
+
+      $file_name = $_FILES['Image']['name'];   
+      $temp_file_location = $_FILES['Image']['tmp_name']; 
+  
+      require '../vendor/autoload.php';
+      
+      $s3 = new Aws\S3\S3Client([
+        'region'  => 'eu-west-2',
+        'version' => 'latest',
+        'credentials' => [
+          'key'    => $access_key,
+          'secret' => $secret_key,
+        ]
+      ]);		
+  
+      $result = $s3->deleteObject([
+        'Bucket' => $bucket,
+        'Key'    => $ImageToBeDeleted,		
+      ]);
+      
       $_SESSION["SuccessMessage"]="Post DELETED Successfully";
       Redirect_to("Posts.php");
     }else {

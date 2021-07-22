@@ -2,8 +2,10 @@
 <?php require_once("Includes/Functions.php"); ?>
 <?php require_once("Includes/Sessions.php"); ?>
 <?php $_SESSION["TrackingURL"]=$_SERVER["PHP_SELF"];
-Confirm_Login(); ?>
-<?php
+Confirm_Login(); 
+$access_key = getenv('AWS_ACCESS_KEY_ID')?: die('No "AWS_ACCESS_KEY_ID" config var in found in env!');
+$secret_key = getenv('AWS_SECRET_ACCESS_KEY')?: die('No "AWS_SECRET_ACCESS_KEY" config var in found in env!');
+$bucket = getenv('S3_BUCKET')?: die('No "S3_BUCKET" config var in found in env!');
 if(isset($_POST["Submit"])){
   $PostTitle = $_POST["PostTitle"];
   $Category  = $_POST["Category"];
@@ -25,26 +27,65 @@ if(isset($_POST["Submit"])){
     $_SESSION["ErrorMessage"]= "Post Description should be less than than 1000 characters";
     Redirect_to("AddNewPost.php");
   }else{
-    // Query to insert Post in DB When everything is fine
-    global $ConnectingDB;
-    $sql = "INSERT INTO posts(datetime,title,category,author,image,post)";
-    $sql .= "VALUES(:dateTime,:postTitle,:categoryName,:adminName,:imageName,:postDescription)";
-    $stmt = $ConnectingDB->prepare($sql);
-    $stmt->bindValue(':dateTime',$DateTime);
-    $stmt->bindValue(':postTitle',$PostTitle);
-    $stmt->bindValue(':categoryName',$Category);
-    $stmt->bindValue(':adminName',$Admin);
-    $stmt->bindValue(':imageName',$Image);
-    $stmt->bindValue(':postDescription',$PostText);
-    $Execute=$stmt->execute();
-    move_uploaded_file($_FILES["Image"]["tmp_name"],$Target);
+    $sql = "SELECT COUNT(*) FROM `posts` WHERE 1"; 
+    $stmt = $ConnectingDB->prepare($sql); 
+    $result = $stmt->execute();
+    $count = $stmt->fetchColumn(); 
+
+    if ($count <=2) {
+    
+      // Query to insert Post in DB When everything is fine
+      global $ConnectingDB;
+      $sql = "INSERT INTO posts(datetime,title,category,author,image,post)";
+      $sql .= "VALUES(:dateTime,:postTitle,:categoryName,:adminName,:imageName,:postDescription)";
+      $stmt = $ConnectingDB->prepare($sql);
+      $stmt->bindValue(':dateTime',$DateTime);
+      $stmt->bindValue(':postTitle',$PostTitle);
+      $stmt->bindValue(':categoryName',$Category);
+      $stmt->bindValue(':adminName',$Admin);
+      $stmt->bindValue(':imageName',$Image);
+      $stmt->bindValue(':postDescription',$PostText);
+      $Execute=$stmt->execute();
+      // move_uploaded_file($_FILES["Image"]["tmp_name"],$Target);
+      // Image will be stored within Amazon S3 
+
+      $file_name = $_FILES['Image']['name'];   
+      $temp_file_location = $_FILES['Image']['tmp_name']; 
+
+      require '../vendor/autoload.php';
+
+      $s3 = new Aws\S3\S3Client([
+        'region'  => 'eu-west-2',
+        'version' => 'latest',
+        'credentials' => [
+          'key'    => $access_key,
+          'secret' => $secret_key,
+        ]
+      ]);		
+
+      if ($file_name) {
+		    $result = $s3->putObject([
+			    'Bucket' => $bucket,
+			    'Key'    => $file_name,
+			    'SourceFile' => $temp_file_location			
+		    ]);
+      }
+    }
+
     if($Execute){
       $_SESSION["SuccessMessage"]="Post with id : " .$ConnectingDB->lastInsertId()." added Successfully";
+      $_SESSION["SuccessMessage"]="Good x is ".$count;
+
       Redirect_to("AddNewPost.php");
     }else {
-      $_SESSION["ErrorMessage"]= "Something went wrong. Try Again !";
+      if($count >2) {
+        $_SESSION["ErrorMessage"]= "AWS Maximum Post Limit Reached!";
+      } else {
+        $_SESSION["ErrorMessage"]= "Something went wrong. Try Again !";
+      }
       Redirect_to("AddNewPost.php");
     }
+
   }
 } //Ending of Submit Button If-Condition
  ?>
