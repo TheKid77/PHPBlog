@@ -47,7 +47,7 @@ if(isset($_POST["Submit"])){
     }
     $Execute= $ConnectingDB->query($sql);
 
-    require '../vendor/autoload.php';
+    require 'vendor/autoload.php';
 
     $s3 = new Aws\S3\S3Client([
       'region'  => 'eu-west-2',
@@ -197,7 +197,7 @@ if(isset($_POST["Submit"])){
                </select>
             </div>
             <?php
-            		require '../vendor/autoload.php';
+            		require 'vendor/autoload.php';
                 
                 $s3 = new Aws\S3\S3Client([
                   'region'  => 'eu-west-2',

@@ -163,7 +163,7 @@ Confirm_Login(); ?>
           </td>
               <td>
 <?php
-		require '../vendor/autoload.php';
+		require 'vendor/autoload.php';
 
 		$s3 = new Aws\S3\S3Client([
 			'region'  => 'eu-west-2',

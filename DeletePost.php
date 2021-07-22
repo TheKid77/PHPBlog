@@ -34,7 +34,7 @@ if(isset($_POST["Submit"])){
       $file_name = $_FILES['Image']['name'];   
       $temp_file_location = $_FILES['Image']['tmp_name']; 
   
-      require '../vendor/autoload.php';
+      require 'vendor/autoload.php';
       
       $s3 = new Aws\S3\S3Client([
         'region'  => 'eu-west-2',
