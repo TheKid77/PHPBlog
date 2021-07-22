@@ -1,6 +1,11 @@
 <?php require_once("Includes/DB.php"); ?>
 <?php require_once("Includes/Functions.php"); ?>
 <?php require_once("Includes/Sessions.php"); ?>
+<?php
+$access_key = getenv('AWS_ACCESS_KEY_ID')?: die('No "AWS_ACCESS_KEY_ID" config var in found in env!');
+$secret_key = getenv('AWS_SECRET_ACCESS_KEY')?: die('No "AWS_SECRET_ACCESS_KEY" config var in found in env!');
+$bucket = getenv('S3_BUCKET')?: die('No "S3_BUCKET" config var in found in env!');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -118,9 +123,33 @@
             $Admin           = $DataRows["author"];
             $Image           = $DataRows["image"];
             $PostDescription = $DataRows["post"];
+
+            require 'vendor/autoload.php';
+                
+            $s3 = new Aws\S3\S3Client([
+              'region'  => 'eu-west-2',
+              'version' => 'latest',
+              'credentials' => [
+                'key'    => $access_key,
+                'secret' => $secret_key,
+              ]
+            ]);		
+        
+            //Get a command to GetObject
+            $cmd = $s3->getCommand('GetObject', [
+            'Bucket' => $bucket,
+            'Key'    => $Image
+            ]);
+        
+        //The period of availability
+        $request = $s3->createPresignedRequest($cmd, '+10 minutes');
+        
+        //Get the pre-signed URL
+        $ImageURL = (string) $request->getUri();
+
           ?>
           <div class="card">
-            <img src="Uploads/<?php echo htmlentities($Image); ?>" style="max-height:450px;" class="img-fluid card-img-top" />
+            <img src="<?php echo htmlentities($ImageURL); ?>" style="max-height:450px;" class="img-fluid card-img-top" />
             <div class="card-body">
               <h4 class="card-title"><?php echo htmlentities($PostTitle); ?></h4>
               <small class="text-muted">Category: <span class="text-dark"> <a href="index.php?category=<?php echo htmlentities($Category); ?>"> <?php echo htmlentities($Category); ?> </a></span> & Written by <span class="text-dark"> <a href="Profile.php?username=<?php echo htmlentities($Admin); ?>"> <?php echo htmlentities($Admin); ?></a></span> On <span class="text-dark"><?php echo htmlentities($DateTime); ?></span></small>
@@ -245,9 +274,33 @@
                 $Title  = $DataRows['title'];
                 $DateTime = $DataRows['datetime'];
                 $Image = $DataRows['image'];
+
+                require 'vendor/autoload.php';
+                
+                $s3 = new Aws\S3\S3Client([
+                  'region'  => 'eu-west-2',
+                  'version' => 'latest',
+                  'credentials' => [
+                    'key'    => $access_key,
+                    'secret' => $secret_key,
+                  ]
+                ]);		
+            
+                //Get a command to GetObject
+                $cmd = $s3->getCommand('GetObject', [
+                'Bucket' => $bucket,
+                'Key'    => $Image
+                ]);
+            
+            //The period of availability
+            $request = $s3->createPresignedRequest($cmd, '+10 minutes');
+            
+            //Get the pre-signed URL
+            $ImageURL = (string) $request->getUri();
+    
               ?>
               <div class="media">
-                <img src="Uploads/<?php echo htmlentities($Image); ?>" class="d-block img-fluid align-self-start"  width="90" height="94" alt="">
+                <img src="<?php echo htmlentities($ImageURL); ?>" class="d-block img-fluid align-self-start"  width="90" height="94" alt="">
                 <div class="media-body ml-2">
                 <a style="text-decoration:none;"href="FullPost.php?id=<?php echo htmlentities($Id) ; ?>" target="_blank">  <h6 class="lead"><?php echo htmlentities($Title); ?></h6> </a>
                   <p class="small"><?php echo htmlentities($DateTime); ?></p>

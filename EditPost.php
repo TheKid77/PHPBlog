@@ -1,10 +1,17 @@
 <?php require_once("Includes/DB.php"); ?>
 <?php require_once("Includes/Functions.php"); ?>
 <?php require_once("Includes/Sessions.php"); ?>
+<?php
+$access_key = getenv('AWS_ACCESS_KEY_ID')?: die('No "AWS_ACCESS_KEY_ID" config var in found in env!');
+$secret_key = getenv('AWS_SECRET_ACCESS_KEY')?: die('No "AWS_SECRET_ACCESS_KEY" config var in found in env!');
+$bucket = getenv('S3_BUCKET')?: die('No "S3_BUCKET" config var in found in env!');
+?>
 <?php Confirm_Login(); ?> 
 <?php
 $SarchQueryParameter = $_GET['id'];
+
 if(isset($_POST["Submit"])){
+  echo "<script>alert('in submit1');</script>";
   $PostTitle = $_POST["PostTitle"];
   $Category  = $_POST["Category"];
   $Image     = $_FILES["Image"]["name"];
@@ -14,6 +21,8 @@ if(isset($_POST["Submit"])){
   date_default_timezone_set("Asia/Karachi");
   $CurrentTime = time();
   $DateTime    = strftime("%B-%d-%Y %H:%M:%S",$CurrentTime);
+
+  $ImageToBeUpdated  = $_POST["ImageToBeUpdated"];
 
   if(empty($PostTitle)){
     $_SESSION["ErrorMessage"]= "Title Cant be empty";
@@ -37,7 +46,35 @@ if(isset($_POST["Submit"])){
               WHERE id='$SarchQueryParameter'";
     }
     $Execute= $ConnectingDB->query($sql);
-    move_uploaded_file($_FILES["Image"]["tmp_name"],$Target);
+
+    require 'vendor/autoload.php';
+
+    $s3 = new Aws\S3\S3Client([
+      'region'  => 'eu-west-2',
+      'version' => 'latest',
+      'credentials' => [
+        'key'    => $access_key,
+        'secret' => $secret_key,
+      ]
+    ]);		
+
+    if ($ImageToBeUpdated) {
+      $result = $s3->deleteObject([
+        'Bucket' => $bucket,
+        'Key'    => $ImageToBeUpdated,		
+      ]);
+    }
+    $temp_file_location = $_FILES['Image']['tmp_name']; 
+    if (!empty($_FILES["Image"]["name"])) {
+
+		  $result = $s3->putObject([
+			  'Bucket' => 'phpblog',
+			  'Key'    => $Image,
+			  'SourceFile' => $temp_file_location			
+		  ]);
+    }    
+    
+    // move_uploaded_file($_FILES["Image"]["tmp_name"],$Target);
     //var_dump($Execute);
     if($Execute){
       $_SESSION["SuccessMessage"]="Post Updated Successfully";
@@ -144,7 +181,7 @@ if(isset($_POST["Submit"])){
               <span class="FieldInfo">Existing Category: </span>
               <?php echo $CategoryToBeUpdated;?>
               <br>
-              <label for="CategoryTitle"> <span class="FieldInfo"> Chose Categroy </span></label>
+              <label for="CategoryTitle"> <span class="FieldInfo"> Chose Category </span></label>
                <select class="form-control" id="CategoryTitle"  name="Category">
                  <?php
                  //Fetchinng all the categories from category table
@@ -159,9 +196,34 @@ if(isset($_POST["Submit"])){
                   <?php } ?>
                </select>
             </div>
+            <?php
+            		require 'vendor/autoload.php';
+                
+                $s3 = new Aws\S3\S3Client([
+                  'region'  => 'eu-west-2',
+                  'version' => 'latest',
+                  'credentials' => [
+                    'key'    => $access_key,
+                    'secret' => $secret_key,
+                  ]
+                ]);		
+            
+                //Get a command to GetObject
+              $cmd = $s3->getCommand('GetObject', [
+              'Bucket' => $bucket,
+              'Key'    => $ImageToBeUpdated
+            ]);
+            
+            //The period of availability
+            $request = $s3->createPresignedRequest($cmd, '+10 minutes');
+            
+            //Get the pre-signed URL
+            $ImageURL = (string) $request->getUri();
+            ?>
+
             <div class="form=group mb-1">
               <span class="FieldInfo">Existing Image: </span>
-              <img  class="mb-1" src="Uploads/<?php echo $ImageToBeUpdated;?>" width="170px"; height="70px"; >
+              <img  class="mb-1" src="<?php echo $ImageURL;?>" width="170px"; height="70px"; >
               <div class="custom-file">
               <input class="custom-file-input" type="File" name="Image" id="imageSelect" value="">
               <label for="imageSelect" class="custom-file-label">Select Image </label>
@@ -181,6 +243,7 @@ if(isset($_POST["Submit"])){
                 <button type="submit" name="Submit" class="btn btn-success btn-block">
                   <i class="fas fa-check"></i> Publish
                 </button>
+                <input type="hidden" name="ImageToBeUpdated" value="<?php echo $ImageToBeUpdated; ?>"> 
               </div>
             </div>
           </div>

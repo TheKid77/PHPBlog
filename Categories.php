@@ -122,7 +122,7 @@ if(isset($_POST["Submit"])){
           </div>
           <div class="card-body bg-dark">
             <div class="form-group">
-              <label for="title"> <span class="FieldInfo"> Categroy Title: </span></label>
+              <label for="title"> <span class="FieldInfo"> Category Title: </span></label>
                <input class="form-control" type="text" name="CategoryTitle" id="title" placeholder="Type title here" value="">
             </div>
             <div class="row">

@@ -9,5 +9,6 @@ $cleardb_db = substr($cleardb_url["path"],1);
 $active_group = 'default';
 $query_builder = TRUE;
 // Connect to DB
-$ConnectingDB = mysqli_connect($cleardb_server, $cleardb_username, $cleardb_password, $cleardb_db);
+// $DSN="mysql:host='.$cleardb_server';dbname='.$cleardb_db.';";
+$ConnectingDB = new PDO("mysql:host=$cleardb_server; dbname=$cleardb_db;",$cleardb_username,$cleardb_password);
 ?>
