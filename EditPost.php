@@ -2,13 +2,11 @@
 <?php require_once("Includes/Functions.php"); ?>
 <?php require_once("Includes/Sessions.php"); ?>
 <?php
-$access_key = getenv('AWS_ACCESS_KEY_ID')?: die('No "AWS_ACCESS_KEY_ID" config var in found in env!');
-$secret_key = getenv('AWS_SECRET_ACCESS_KEY')?: die('No "AWS_SECRET_ACCESS_KEY" config var in found in env!');
-$bucket = getenv('S3_BUCKET')?: die('No "S3_BUCKET" config var in found in env!');
+require_once("Includes/env.php");
 ?>
 <?php Confirm_Login(); ?> 
 <?php
-$SarchQueryParameter = $_GET['id'];
+$SearchQueryParameter = $_GET['id'];
 
 if(isset($_POST["Submit"])){
   echo "<script>alert('in submit1');</script>";
@@ -34,55 +32,67 @@ if(isset($_POST["Submit"])){
     $_SESSION["ErrorMessage"]= "Post Description should be less than than 1000 characters";
     Redirect_to("Posts.php");
   }else{
-    // Query to Update Post in DB When everything is fine
-    global $ConnectingDB;
-    if (!empty($_FILES["Image"]["name"])) {
-      $sql = "UPDATE posts
-              SET title='$PostTitle', category='$Category', image='$Image', post='$PostText'
-              WHERE id='$SarchQueryParameter'";
-    }else {
-      $sql = "UPDATE posts
-              SET title='$PostTitle', category='$Category', post='$PostText'
-              WHERE id='$SarchQueryParameter'";
-    }
-    $Execute= $ConnectingDB->query($sql);
+    if(CheckAWSOK()) { 
+      // Query to Update Post in DB When everything is fine
+      global $ConnectingDB;
+      if (!empty($_FILES["Image"]["name"])) {
+        $sql = "UPDATE posts
+                SET title='$PostTitle', category='$Category', image='$Image', post='$PostText'
+                WHERE id='$SearchQueryParameter'";
+      }else {
+        echo("{$PostTitle}.{$Category}.{$PostText}.{$SearchQueryParameter}");
+        $sql = "UPDATE posts
+                SET title='$PostTitle', category='$Category', post='$PostText'
+                WHERE id='$SearchQueryParameter'";
+      }
+      $stmt = $ConnectingDB->prepare($sql);
+      $Execute=$stmt->execute();
+      echo($Execute);
 
-    require 'vendor/autoload.php';
+      if(CheckAWSOK()) { 
+        require 'vendor/autoload.php';
 
-    $s3 = new Aws\S3\S3Client([
-      'region'  => 'eu-west-2',
-      'version' => 'latest',
-      'credentials' => [
-        'key'    => $access_key,
-        'secret' => $secret_key,
-      ]
-    ]);		
+        $s3 = new Aws\S3\S3Client([
+          'region'  => 'eu-west-2',
+          'version' => 'latest',
+          'credentials' => [
+            'key'    => $access_key,
+            'secret' => $secret_key,
+          ]
+        ]);		
 
-    if ($ImageToBeUpdated) {
-      $result = $s3->deleteObject([
-        'Bucket' => $bucket,
-        'Key'    => $ImageToBeUpdated,		
-      ]);
-    }
-    $temp_file_location = $_FILES['Image']['tmp_name']; 
-    if (!empty($_FILES["Image"]["name"])) {
+        if ($ImageToBeUpdated) {
+          $result = $s3->deleteObject([
+            'Bucket' => $bucket,
+            'Key'    => $ImageToBeUpdated,		
+          ]);
+          UP_AWS_PUTS();
+        }
+        $temp_file_location = $_FILES['Image']['tmp_name']; 
+        if (!empty($_FILES["Image"]["name"])) {
 
-		  $result = $s3->putObject([
-			  'Bucket' => 'phpblog',
-			  'Key'    => $Image,
-			  'SourceFile' => $temp_file_location			
-		  ]);
-    }    
-    
+          $result = $s3->putObject([
+            'Bucket' => 'phpblog',
+            'Key'    => $Image,
+            'SourceFile' => $temp_file_location			
+          ]);
+          UP_AWS_PUTS();
+        }
+      }        
     // move_uploaded_file($_FILES["Image"]["tmp_name"],$Target);
     //var_dump($Execute);
-    if($Execute){
-      $_SESSION["SuccessMessage"]="Post Updated Successfully";
-      Redirect_to("Posts.php");
-    }else {
-      $_SESSION["ErrorMessage"]= "Something went wrong. Try Again !";
+      if($Execute){
+        $_SESSION["SuccessMessage"]="Post Updated Successfully";
+        Redirect_to("Posts.php");
+      } else {
+        $_SESSION["ErrorMessage"]= "Something went wrong. Try Again !".
+        Redirect_to("Posts.php");
+      }
+    } else { // AWS LIMIT Hit
+      $_SESSION["ErrorMessage"]= "AWS Maximum Limit Reached!";
       Redirect_to("Posts.php");
     }
+    // AWS Limit
   }
 } //Ending of Submit Button If-Condition
  ?>
@@ -160,7 +170,7 @@ if(isset($_POST["Submit"])){
        echo SuccessMessage();
        // Fetching Existing Content according to our
        global $ConnectingDB;
-       $sql  = "SELECT * FROM posts WHERE id='$SarchQueryParameter'";
+       $sql  = "SELECT * FROM posts WHERE id='$SearchQueryParameter'";
        $stmt = $ConnectingDB ->query($sql);
        while ($DataRows=$stmt->fetch()) {
          $TitleToBeUpdated    = $DataRows['title'];
@@ -170,7 +180,7 @@ if(isset($_POST["Submit"])){
          // code...
        }
        ?>
-      <form class="" action="EditPost.php?id=<?php echo $SarchQueryParameter; ?>" method="post" enctype="multipart/form-data">
+      <form class="" action="EditPost.php?id=<?php echo $SearchQueryParameter; ?>" method="post" enctype="multipart/form-data">
         <div class="card bg-secondary text-light mb-3">
           <div class="card-body bg-dark">
             <div class="form-group">
@@ -197,30 +207,34 @@ if(isset($_POST["Submit"])){
                </select>
             </div>
             <?php
-            		require 'vendor/autoload.php';
-                
-                $s3 = new Aws\S3\S3Client([
-                  'region'  => 'eu-west-2',
-                  'version' => 'latest',
-                  'credentials' => [
-                    'key'    => $access_key,
-                    'secret' => $secret_key,
-                  ]
-                ]);		
-            
-                //Get a command to GetObject
+            if(CheckAWSOK()) { 
+              require 'vendor/autoload.php';
+                  
+              $s3 = new Aws\S3\S3Client([
+                'region'  => 'eu-west-2',
+                'version' => 'latest',
+                'credentials' => [
+                'key'    => $access_key,
+                'secret' => $secret_key,
+                ]
+              ]);		
+              
+              //Get a command to GetObject
               $cmd = $s3->getCommand('GetObject', [
               'Bucket' => $bucket,
-              'Key'    => $ImageToBeUpdated
-            ]);
-            
-            //The period of availability
-            $request = $s3->createPresignedRequest($cmd, '+10 minutes');
-            
-            //Get the pre-signed URL
-            $ImageURL = (string) $request->getUri();
+              'Key'    => $ImageToBeUpdated            
+              ]);
+              UP_AWS_GETS();
+              
+              //The period of availability
+              $request = $s3->createPresignedRequest($cmd, '+10 minutes');
+              UP_AWS_GETS();
+              
+              //Get the pre-signed URL
+              $ImageURL = (string) $request->getUri();
+              UP_AWS_GETS();
+            } 
             ?>
-
             <div class="form=group mb-1">
               <span class="FieldInfo">Existing Image: </span>
               <img  class="mb-1" src="<?php echo $ImageURL;?>" width="170px"; height="70px"; >

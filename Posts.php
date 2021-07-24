@@ -2,10 +2,8 @@
 <?php require_once("Includes/Functions.php"); ?>
 <?php require_once("Includes/Sessions.php"); ?>
 <?php
+require_once("Includes/env.php");
 $_SESSION["TrackingURL"]=$_SERVER["PHP_SELF"];
-$access_key = getenv('AWS_ACCESS_KEY_ID')?: die('No "AWS_ACCESS_KEY_ID" config var in found in env!');
-$secret_key = getenv('AWS_SECRET_ACCESS_KEY')?: die('No "AWS_SECRET_ACCESS_KEY" config var in found in env!');
-$bucket = getenv('S3_BUCKET')?: die('No "S3_BUCKET" config var in found in env!');
 //echo $_SESSION["TrackingURL"];
 
 Confirm_Login(); ?>
@@ -162,31 +160,36 @@ Confirm_Login(); ?>
                ?>
           </td>
               <td>
-<?php
-		require 'vendor/autoload.php';
+                <?php
+                if(CheckAWSOK()) { 
+                  require 'vendor/autoload.php';
 
-		$s3 = new Aws\S3\S3Client([
-			'region'  => 'eu-west-2',
-			'version' => 'latest',
-			'credentials' => [
-				'key'    => $access_key,
-				'secret' => $secret_key,
-			]
-		]);		
+                  $s3 = new Aws\S3\S3Client([
+                    'region'  => 'eu-west-2',
+                    'version' => 'latest',
+                    'credentials' => [
+                      'key'    => $access_key,
+                      'secret' => $secret_key,
+                    ]
+                  ]);		
 
-    //Get a command to GetObject
-  $cmd = $s3->getCommand('GetObject', [
-  'Bucket' => $bucket,
-  'Key'    => $Image
-]);
+                  //Get a command to GetObject
+                  $cmd = $s3->getCommand('GetObject', [
+                  'Bucket' => $bucket,
+                  'Key'    => $Image
+                  ]);
+                  UP_AWS_GETS();
 
-//The period of availability
-$request = $s3->createPresignedRequest($cmd, '+10 minutes');
+                  //The period of availability
+                  $request = $s3->createPresignedRequest($cmd, '+10 minutes');
+                  UP_AWS_GETS();
 
-//Get the pre-signed URL
-$signedUrl = (string) $request->getUri();
-// echo($signedUrl);
-?>
+                  //Get the pre-signed URL
+                  $signedUrl = (string) $request->getUri();
+                  UP_AWS_GETS();
+                } 
+                  // echo($signedUrl);
+                ?>
                 <img src="<?php echo $signedUrl; ?>" width="170px;" height="50px">
 
               </td>

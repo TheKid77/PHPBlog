@@ -1,5 +1,7 @@
 <?php require_once("Includes/DB.php"); ?>
+<?php require("Includes/Limits.php"); ?>
 <?php
+
 function Redirect_to($New_Location){
   header("Location:".$New_Location);
   exit;
@@ -94,6 +96,38 @@ function DisApproveCommentsAccordingtoPost($PostId){
   $RowsTotal = $stmtDisApprove->fetch();
   $Total = array_shift($RowsTotal);
   return $Total;
+}
+
+function CheckAWSOK(){
+  global $ConnectingDB;
+  $sql = "SELECT * FROM `requests` LIMIT 1"; 
+  $stmt = $ConnectingDB->prepare($sql);
+  $result = $stmt->execute();
+  $RequestRow = $stmt->fetch();
+  $no_of_gets = $RequestRow["get"];
+  $no_of_puts = $RequestRow["put"];
+  if ($no_of_gets >=  MAX_GET || $no_of_puts >= MAX_PUT) {
+    return false;
+  }
+return true;
+}
+
+function UP_AWS_GETS(){
+  global $ConnectingDB;
+  $sql = "UPDATE requests SET get=get + 1 WHERE id=1";
+  $Execute = $ConnectingDB->query($sql);
+  if (!$Execute) {
+    $_SESSION["ErrorMessage"]="Something Went Wrong Updating Get LIMITS!";
+  }
+}
+
+function UP_AWS_PUTS(){
+  global $ConnectingDB;
+  $sql = "UPDATE requests SET put=put + 1 WHERE id=1";
+  $Execute = $ConnectingDB->query($sql);
+  if (!$Execute) {
+    $_SESSION["ErrorMessage"]="Something Went Wrong Updating Put LIMITS!";
+  }
 }
 
 function console_log( $data ){

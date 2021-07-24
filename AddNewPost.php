@@ -2,10 +2,9 @@
 <?php require_once("Includes/Functions.php"); ?>
 <?php require_once("Includes/Sessions.php"); ?>
 <?php $_SESSION["TrackingURL"]=$_SERVER["PHP_SELF"];
+require_once("Includes/env.php");
+
 Confirm_Login(); 
-$access_key = getenv('AWS_ACCESS_KEY_ID')?: die('No "AWS_ACCESS_KEY_ID" config var in found in env!');
-$secret_key = getenv('AWS_SECRET_ACCESS_KEY')?: die('No "AWS_SECRET_ACCESS_KEY" config var in found in env!');
-$bucket = getenv('S3_BUCKET')?: die('No "S3_BUCKET" config var in found in env!');
 if(isset($_POST["Submit"])){
   $PostTitle = $_POST["PostTitle"];
   $Category  = $_POST["Category"];
@@ -27,13 +26,14 @@ if(isset($_POST["Submit"])){
     $_SESSION["ErrorMessage"]= "Post Description should be less than than 1000 characters";
     Redirect_to("AddNewPost.php");
   }else{
-    $sql = "SELECT COUNT(*) FROM `posts` WHERE 1"; 
-    $stmt = $ConnectingDB->prepare($sql); 
-    $result = $stmt->execute();
-    $count = $stmt->fetchColumn(); 
+    // $sql = "SELECT * FROM `requests` LIMIT 1"; 
+    // $stmt = $ConnectingDB->prepare($sql);
+    // $result = $stmt->execute();
+    // $RequestRow = $stmt->fetch();
+    // $no_of_gets = $RequestRow["get"];
+    // $no_of_puts = $RequestRow["put"];
 
-    if ($count <=2) {
-    
+    if(CheckAWSOK()) {    
       // Query to insert Post in DB When everything is fine
       global $ConnectingDB;
       $sql = "INSERT INTO posts(datetime,title,category,author,image,post)";
@@ -51,40 +51,41 @@ if(isset($_POST["Submit"])){
 
       $file_name = $_FILES['Image']['name'];   
       $temp_file_location = $_FILES['Image']['tmp_name']; 
+      if($Execute) {
+        require 'vendor/autoload.php';
 
-      require 'vendor/autoload.php';
+        $s3 = new Aws\S3\S3Client([
+          'region'  => 'eu-west-2',
+          'version' => 'latest',
+          'credentials' => [
+            'key'    => $access_key,
+            'secret' => $secret_key,
+          ]
+        ]);		
 
-      $s3 = new Aws\S3\S3Client([
-        'region'  => 'eu-west-2',
-        'version' => 'latest',
-        'credentials' => [
-          'key'    => $access_key,
-          'secret' => $secret_key,
-        ]
-      ]);		
-
-      if ($file_name) {
-		    $result = $s3->putObject([
-			    'Bucket' => $bucket,
-			    'Key'    => $file_name,
-			    'SourceFile' => $temp_file_location			
-		    ]);
-      }
-    }
-
+        if ($file_name) {
+        $result = $s3->putObject([
+             'Bucket' => $bucket,
+             'Key'    => $file_name,
+             'SourceFile' => $temp_file_location			
+           ]);
+         }
+      } // DB store ok
+    } // within AWS Limits
     if($Execute){
       $_SESSION["SuccessMessage"]="Post with id : " .$ConnectingDB->lastInsertId()." added Successfully";
+      UP_AWS_PUTS();
       Redirect_to("AddNewPost.php");
     }else {
-      if($count >2) {
-        $_SESSION["ErrorMessage"]= "AWS Maximum Post Limit Reached!";
+      if(!(CheckAWSOK())) {
+        $_SESSION["ErrorMessage"]= "AWS Maximum Limit Reached!";
       } else {
         $_SESSION["ErrorMessage"]= "Something went wrong. Try Again !";
       }
       Redirect_to("AddNewPost.php");
     }
 
-  }
+  } // validation passed
 } //Ending of Submit Button If-Condition
  ?>
 <!DOCTYPE html>
