@@ -1,16 +1,13 @@
 <?php require_once("Includes/DB.php"); ?>
 <?php require_once("Includes/Functions.php"); ?>
 <?php require_once("Includes/Sessions.php"); ?>
-<?php
-$access_key = getenv('AWS_ACCESS_KEY_ID')?: die('No "AWS_ACCESS_KEY_ID" config var in found in env!');
-$secret_key = getenv('AWS_SECRET_ACCESS_KEY')?: die('No "AWS_SECRET_ACCESS_KEY" config var in found in env!');
-$bucket = getenv('S3_BUCKET')?: die('No "S3_BUCKET" config var in found in env!');?>
+<?php require_once("Includes/env.php"); ?>
 <?php Confirm_Login(); ?>
 <?php
-$SarchQueryParameter = $_GET['id'];
+$SearchQueryParameter = $_GET['id'];
 // Fetching Existing Content according to our post
 global $ConnectingDB;
-$sql  = "SELECT * FROM posts WHERE id='$SarchQueryParameter'";
+$sql  = "SELECT * FROM posts WHERE id='$SearchQueryParameter'";
 $stmt = $ConnectingDB ->query($sql);
 while ($DataRows=$stmt->fetch()) {
   $TitleToBeDeleted    = $DataRows['title'];
@@ -19,11 +16,37 @@ while ($DataRows=$stmt->fetch()) {
   $PostToBeDeleted     = $DataRows['post'];
   // code...
 }
+
+if(CheckAWSOK()) { 
+
+  require 'vendor/autoload.php';
+    
+  $s3 = new Aws\S3\S3Client([
+    'region'  => 'eu-west-2',
+    'version' => 'latest',
+    'credentials' => [
+    'key'    => $access_key,
+    'secret' => $secret_key,
+    ]
+  ]);		
+  $cmd = $s3->getCommand('GetObject', [
+    'Bucket' => $bucket,
+    'Key'    => $ImageToBeDeleted,		
+  ]);
+  $request = $s3->createPresignedRequest($cmd, '+10 minutes');
+            
+  //Get the pre-signed URL
+  $ImageURL = (string) $request->getUri();
+  UP_AWS_GETS();
+}
+
 // echo $ImageToBeDeleted;
 if(isset($_POST["Submit"])){
+
+  if(CheckAWSOK()) {    
     // Query to Delete Post in DB When everything is fine
     global $ConnectingDB;
-    $sql = "DELETE FROM posts WHERE id='$SarchQueryParameter'";
+    $sql = "DELETE FROM posts WHERE id='$SearchQueryParameter'";
     $Execute =$ConnectingDB->query($sql);
     //var_dump($Execute);
     if($Execute){  
@@ -31,9 +54,9 @@ if(isset($_POST["Submit"])){
 
       // unlink($Target_Path_To_DELETE_Image);
 
-      $file_name = $_FILES['Image']['name'];   
-      $temp_file_location = $_FILES['Image']['tmp_name']; 
-  
+      // $file_name = $_FILES['Image']['name'];   
+      // $temp_file_location = $_FILES['Image']['tmp_name']; 
+
       require 'vendor/autoload.php';
       
       $s3 = new Aws\S3\S3Client([
@@ -44,18 +67,24 @@ if(isset($_POST["Submit"])){
           'secret' => $secret_key,
         ]
       ]);		
-  
+
       $result = $s3->deleteObject([
         'Bucket' => $bucket,
         'Key'    => $ImageToBeDeleted,		
       ]);
       
       $_SESSION["SuccessMessage"]="Post DELETED Successfully";
+      UP_AWS_PUTS();
       Redirect_to("Posts.php");
     }else {
-      $_SESSION["ErrorMessage"]= "Something went wrong. Try Again !";
-      Redirect_to("Posts.php");
-    }
+       $_SESSION["ErrorMessage"]= "Something went wrong. Try Again !";
+       Redirect_to("Posts.php");
+      }
+  } 
+  else {
+    $_SESSION["ErrorMessage"]= "AWS Maximum Limit Reached!";
+    Redirect_to("Posts.php");
+  }
 } //Ending of Submit Button If-Condition
  ?>
 <!DOCTYPE html>
@@ -131,7 +160,7 @@ if(isset($_POST["Submit"])){
        echo ErrorMessage();
        echo SuccessMessage();
        ?>
-      <form class="" action="DeletePost.php?id=<?php echo $SarchQueryParameter; ?>" method="post" enctype="multipart/form-data">
+      <form class="" action="DeletePost.php?id=<?php echo $SearchQueryParameter; ?>" method="post" enctype="multipart/form-data">
         <div class="card bg-secondary text-light mb-3">
           <div class="card-body bg-dark">
             <div class="form-group">
@@ -145,7 +174,7 @@ if(isset($_POST["Submit"])){
             </div>
             <div class="form-group">
               <span class="FieldInfo">Existing Image: </span>
-              <img  class="mb-1" src="Uploads/<?php echo $ImageToBeDeleted;?>" width="170px"; height="70px"; >
+              <img  class="mb-1" src="<?php echo $ImageURL;?>" width="170px"; height="70px"; >
             </div>
             <div class="form-group">
               <label for="Post"> <span class="FieldInfo"> Post: </span></label>

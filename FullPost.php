@@ -3,9 +3,7 @@
 <?php require_once("Includes/Sessions.php"); ?>
 <?php $SearchQueryParameter = $_GET["id"]; ?>
 <?php
-$access_key = getenv('AWS_ACCESS_KEY_ID')?: die('No "AWS_ACCESS_KEY_ID" config var in found in env!');
-$secret_key = getenv('AWS_SECRET_ACCESS_KEY')?: die('No "AWS_SECRET_ACCESS_KEY" config var in found in env!');
-$bucket = getenv('S3_BUCKET')?: die('No "S3_BUCKET" config var in found in env!');
+require_once("Includes/env.php");
 ?>
 <?php
 if(isset($_POST["Submit"])){
@@ -156,30 +154,32 @@ if(isset($_POST["Submit"])){
             $Admin           = $DataRows["author"];
             $Image           = $DataRows["image"];
             $PostDescription = $DataRows["post"];
-
-            require 'vendor/autoload.php';
-                
-            $s3 = new Aws\S3\S3Client([
-              'region'  => 'eu-west-2',
-              'version' => 'latest',
-              'credentials' => [
-                'key'    => $access_key,
-                'secret' => $secret_key,
-              ]
-            ]);		
-        
-            //Get a command to GetObject
-            $cmd = $s3->getCommand('GetObject', [
-            'Bucket' => $bucket,
-            'Key'    => $Image
-            ]);
-        
-        //The period of availability
-        $request = $s3->createPresignedRequest($cmd, '+10 minutes');
-        
-        //Get the pre-signed URL
-        $ImageURL = (string) $request->getUri();
-
+            if(CheckAWSOK()) { 
+              require 'vendor/autoload.php';
+                  
+              $s3 = new Aws\S3\S3Client([
+                'region'  => 'eu-west-2',
+                'version' => 'latest',
+                'credentials' => [
+                  'key'    => $access_key,
+                  'secret' => $secret_key,
+                ]
+              ]);		
+          
+              //Get a command to GetObject
+              $cmd = $s3->getCommand('GetObject', [
+              'Bucket' => $bucket,
+              'Key'    => $Image
+              ]);
+              UP_AWS_GETS();
+              //The period of availability
+              $request = $s3->createPresignedRequest($cmd, '+10 minutes');
+              UP_AWS_GETS();
+          
+              //Get the pre-signed URL
+              $ImageURL = (string) $request->getUri();
+              UP_AWS_GETS();
+            }   
           ?>
           <div class="card">
             <img src="<?php echo htmlentities($ImageURL);?>" style="max-height:450px;" class="img-fluid card-img-top" />
