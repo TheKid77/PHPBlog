@@ -1,0 +1,4 @@
+<?php
+DEFINE('MAX_GET', 2000);
+DEFINE('MAX_PUT', 200);
+?>

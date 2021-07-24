@@ -3,7 +3,9 @@
 <?php require_once("Includes/Sessions.php"); ?>
 <?php $SearchQueryParameter = $_GET["id"]; ?>
 <?php
-require_once("Includes/env.php");
+$access_key = getenv('AWS_ACCESS_KEY_ID')?: die('No "AWS_ACCESS_KEY_ID" config var in found in env!');
+$secret_key = getenv('AWS_SECRET_ACCESS_KEY')?: die('No "AWS_SECRET_ACCESS_KEY" config var in found in env!');
+$bucket = getenv('S3_BUCKET')?: die('No "S3_BUCKET" config var in found in env!');
 ?>
 <?php
 if(isset($_POST["Submit"])){
